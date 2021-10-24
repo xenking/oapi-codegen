@@ -1,0 +1,33 @@
+
+
+// This is a simple interface which specifies fiber.Route addition functions which
+// are present on both fiber.Echo and fiber.Group, since we want to allow using
+// either of them for path registration
+type FiberRouter interface {
+	Connect(path string, handlers ...fiber.Handler) fiber.Router
+	Delete(path string, handlers ...fiber.Handler) fiber.Router
+	Get(path string, handlers ...fiber.Handler) fiber.Router
+	Head(path string, handlers ...fiber.Handler) fiber.Router
+	Options(path string, handlers ...fiber.Handler) fiber.Router
+	Patch(path string, handlers ...fiber.Handler) fiber.Router
+	Post(path string, handlers ...fiber.Handler) fiber.Router
+	Put(path string, handlers ...fiber.Handler) fiber.Router
+	Trace(path string, handlers ...fiber.Handler) fiber.Router
+}
+
+// RegisterHandlers adds each server route to the FiberRouter.
+func RegisterHandlers(router FiberRouter, si ServerInterface) {
+    RegisterHandlersWithBaseURL(router, si, "")
+}
+
+// Registers handlers, and prepends BaseURL to the paths, so that the paths
+// can be served under a prefix.
+func RegisterHandlersWithBaseURL(router FiberRouter, si ServerInterface, baseURL string) {
+{{if .}}
+    wrapper := ServerInterfaceWrapper{
+        Handler: si,
+    }
+{{end}}
+{{range .}}router.{{.Method | lower | ucFirst}}(baseURL + "{{.Path | swaggerUriToEchoUri}}", wrapper.{{.OperationId}})
+{{end}}
+}

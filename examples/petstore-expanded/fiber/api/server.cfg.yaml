@@ -1,0 +1,6 @@
+output:
+  petstore-server.gen.go
+generate:
+  - fiber-server
+  - spec
+package: api
