@@ -25,8 +25,8 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/deepmap/oapi-codegen/pkg/codegen"
-	"github.com/deepmap/oapi-codegen/pkg/util"
+	"github.com/xenking/oapi-codegen/pkg/codegen"
+	"github.com/xenking/oapi-codegen/pkg/util"
 )
 
 func errExit(format string, args ...interface{}) {
@@ -112,6 +112,8 @@ func main() {
 			opts.GenerateClient = true
 		case "chi-server":
 			opts.GenerateChiServer = true
+		case "fiber-server":
+			opts.GenerateFiberServer = true
 		case "server":
 			opts.GenerateEchoServer = true
 		case "types":

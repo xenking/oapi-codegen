@@ -936,6 +936,187 @@ func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx echo.Context) error {
 }
 {{end}}
 `,
+	"fiber-interface.tmpl": `// ServerInterface represents all server handlers.
+type ServerInterface interface {
+{{range .}}{{.SummaryAsComment }}
+// ({{.Method}} {{.Path}})
+{{.OperationId}}(ctx *fiber.Ctx{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}}) error
+{{end}}
+}
+`,
+	"fiber-register.tmpl": `
+
+// This is a simple interface which specifies fiber.Route addition functions which
+// are present on both fiber.Echo and fiber.Group, since we want to allow using
+// either of them for path registration
+type FiberRouter interface {
+	Connect(path string, handlers ...fiber.Handler) fiber.Router
+	Delete(path string, handlers ...fiber.Handler) fiber.Router
+	Get(path string, handlers ...fiber.Handler) fiber.Router
+	Head(path string, handlers ...fiber.Handler) fiber.Router
+	Options(path string, handlers ...fiber.Handler) fiber.Router
+	Patch(path string, handlers ...fiber.Handler) fiber.Router
+	Post(path string, handlers ...fiber.Handler) fiber.Router
+	Put(path string, handlers ...fiber.Handler) fiber.Router
+	Trace(path string, handlers ...fiber.Handler) fiber.Router
+}
+
+// RegisterHandlers adds each server route to the FiberRouter.
+func RegisterHandlers(router FiberRouter, si ServerInterface) {
+    RegisterHandlersWithBaseURL(router, si, "")
+}
+
+// Registers handlers, and prepends BaseURL to the paths, so that the paths
+// can be served under a prefix.
+func RegisterHandlersWithBaseURL(router FiberRouter, si ServerInterface, baseURL string) {
+{{if .}}
+    wrapper := ServerInterfaceWrapper{
+        Handler: si,
+    }
+{{end}}
+{{range .}}router.{{.Method | lower | ucFirst}}(baseURL + "{{.Path | swaggerUriToEchoUri}}", wrapper.{{.OperationId}})
+{{end}}
+}
+`,
+	"fiber-wrappers.tmpl": `// ServerInterfaceWrapper converts fiber contexts to parameters.
+type ServerInterfaceWrapper struct {
+    Handler ServerInterface
+}
+
+func QueryParams(ctx *fiber.Ctx) url.Values {
+	args := ctx.Context().QueryArgs()
+	u := make(url.Values, args.Len())
+	args.VisitAll(func(key, value []byte) {
+		u.Add(string(key), string(value))
+	})
+
+	return u
+}
+
+{{range .}}{{$opid := .OperationId}}// {{$opid}} converts fiber context to params.
+func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx *fiber.Ctx) error {
+    var err error
+{{range .PathParams}}// ------------- Path parameter "{{.ParamName}}" -------------
+    var {{$varName := .GoVariableName}}{{$varName}} {{.TypeDef}}
+{{if .IsPassThrough}}
+    {{$varName}} = ctx.Params("{{.ParamName}}")
+{{end}}
+{{if .IsJson}}
+    err = json.Unmarshal([]byte(ctx.Params("{{.ParamName}}")), &{{$varName}})
+    if err != nil {
+        return fiber.NewError(fiber.StatusBadRequest, "Error unmarshaling parameter '{{.ParamName}}' as JSON")
+    }
+{{end}}
+{{if .IsStyled}}
+    err = runtime.BindStyledParameterWithLocation("{{.Style}}",{{.Explode}}, "{{.ParamName}}", runtime.ParamLocationPath, ctx.Params("{{.ParamName}}"), &{{$varName}})
+    if err != nil {
+        return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Invalid format for parameter {{.ParamName}}: %s", err))
+    }
+{{end}}
+{{end}}
+
+{{range .SecurityDefinitions}}
+    ctx.Set({{.ProviderName | sanitizeGoIdentity | ucFirst}}Scopes, {{toStringArray .Scopes}})
+{{end}}
+
+{{if .RequiresParamObject}}
+    // Parameter object where we will unmarshal all parameters from the context
+    var params {{.OperationId}}Params
+{{range $paramIdx, $param := .QueryParams}}// ------------- {{if .Required}}Required{{else}}Optional{{end}} query parameter "{{.ParamName}}" -------------
+    {{if .IsStyled}}
+    err = runtime.BindQueryParameter("{{.Style}}", {{.Explode}}, {{.Required}}, "{{.ParamName}}", QueryParams(ctx), &params.{{.GoName}})
+    if err != nil {
+        return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Invalid format for parameter {{.ParamName}}: %s", err))
+    }
+    {{else}}
+    if paramValue := ctx.QueryParam("{{.ParamName}}"); paramValue != "" {
+    {{if .IsPassThrough}}
+    params.{{.GoName}} = {{if not .Required}}&{{end}}paramValue
+    {{end}}
+    {{if .IsJson}}
+    var value {{.TypeDef}}
+    err = json.Unmarshal([]byte(paramValue), &value)
+    if err != nil {
+        return fiber.NewError(fiber.StatusBadRequest, "Error unmarshaling parameter '{{.ParamName}}' as JSON")
+    }
+    params.{{.GoName}} = {{if not .Required}}&{{end}}value
+    {{end}}
+    }{{if .Required}} else {
+        return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Query argument {{.ParamName}} is required, but not found"))
+    }{{end}}
+    {{end}}
+{{end}}
+
+{{if .HeaderParams}}
+    headers := ctx.Request().Header
+{{range .HeaderParams}}// ------------- {{if .Required}}Required{{else}}Optional{{end}} header parameter "{{.ParamName}}" -------------
+    if valueList, found := headers[http.CanonicalHeaderKey("{{.ParamName}}")]; found {
+        var {{.GoName}} {{.TypeDef}}
+        n := len(valueList)
+        if n != 1 {
+            return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Expected one value for {{.ParamName}}, got %d", n))
+        }
+{{if .IsPassThrough}}
+        params.{{.GoName}} = {{if not .Required}}&{{end}}valueList[0]
+{{end}}
+{{if .IsJson}}
+        err = json.Unmarshal([]byte(valueList[0]), &{{.GoName}})
+        if err != nil {
+            return fiber.NewError(fiber.StatusBadRequest, "Error unmarshaling parameter '{{.ParamName}}' as JSON")
+        }
+{{end}}
+{{if .IsStyled}}
+        err = runtime.BindStyledParameterWithLocation("{{.Style}}",{{.Explode}}, "{{.ParamName}}", runtime.ParamLocationHeader, valueList[0], &{{.GoName}})
+        if err != nil {
+            return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Invalid format for parameter {{.ParamName}}: %s", err))
+        }
+{{end}}
+        params.{{.GoName}} = {{if not .Required}}&{{end}}{{.GoName}}
+        } {{if .Required}}else {
+            return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Header parameter {{.ParamName}} is required, but not found"))
+        }{{end}}
+{{end}}
+{{end}}
+
+{{range .CookieParams}}
+    if cookie, err := ctx.Cookies("{{.ParamName}}"); err == nil {
+    {{if .IsPassThrough}}
+    params.{{.GoName}} = {{if not .Required}}&{{end}}cookie.Value
+    {{end}}
+    {{if .IsJson}}
+    var value {{.TypeDef}}
+    var decoded string
+    decoded, err := url.QueryUnescape(cookie.Value)
+    if err != nil {
+        return fiber.NewError(fiber.StatusBadRequest, "Error unescaping cookie parameter '{{.ParamName}}'")
+    }
+    err = json.Unmarshal([]byte(decoded), &value)
+    if err != nil {
+        return fiber.NewError(fiber.StatusBadRequest, "Error unmarshaling parameter '{{.ParamName}}' as JSON")
+    }
+    params.{{.GoName}} = {{if not .Required}}&{{end}}value
+    {{end}}
+    {{if .IsStyled}}
+    var value {{.TypeDef}}
+    err = runtime.BindStyledParameterWithLocation("simple",{{.Explode}}, "{{.ParamName}}", runtime.ParamLocationCookie, cookie.Value, &value)
+    if err != nil {
+        return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Invalid format for parameter {{.ParamName}}: %s", err))
+    }
+    params.{{.GoName}} = {{if not .Required}}&{{end}}value
+    {{end}}
+    }{{if .Required}} else {
+        return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Query argument {{.ParamName}} is required, but not found"))
+    }{{end}}
+
+{{end}}{{/* .CookieParams */}}
+
+{{end}}{{/* .RequiresParamObject */}}
+    // Invoke the callback with all the unmarshalled arguments
+    err = w.Handler.{{.OperationId}}(ctx{{genParamNames .PathParams}}{{if .RequiresParamObject}}, params{{end}})
+    return err
+}
+{{end}}
+`,
 	"imports.tmpl": `// Package {{.PackageName}} provides primitives to interact with the openapi HTTP API.
 //
 // Code generated by {{.ModuleName}} version {{.Version}} DO NOT EDIT.
@@ -959,8 +1140,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
-	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
+	"github.com/xenking/oapi-codegen/pkg/runtime"
+	openapi_types "github.com/xenking/oapi-codegen/pkg/types"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
 	"github.com/labstack/echo/v4"

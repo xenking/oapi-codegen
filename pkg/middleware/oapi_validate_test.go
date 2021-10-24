@@ -1,4 +1,4 @@
-// Copyright 2019 DeepMap, Inc.
+// Copyright 2019 DeepMap, Inc.specData
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/deepmap/oapi-codegen/pkg/testutil"
+	"github.com/xenking/oapi-codegen/pkg/testutil"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
