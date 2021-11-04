@@ -17,9 +17,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/xenking/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"github.com/xenking/oapi-codegen/pkg/runtime"
 )
 
 // Has additional properties of type int
@@ -60,8 +60,8 @@ type AdditionalPropertiesObject5 struct {
 	AdditionalProperties map[string]SchemaObject `json:"-"`
 }
 
-// ObjectWithJsonField defines model for ObjectWithJsonField.
-type ObjectWithJsonField struct {
+// ObjectWithJSONField defines model for ObjectWithJsonField.
+type ObjectWithJSONField struct {
 	Name   string          `json:"name"`
 	Value1 json.RawMessage `json:"value1"`
 	Value2 json.RawMessage `json:"value2,omitempty"`
@@ -1067,7 +1067,7 @@ type EnsureEverythingIsReferencedResponse struct {
 
 		// Has anonymous field which has additional properties
 		Four      *AdditionalPropertiesObject4 `json:"four,omitempty"`
-		JsonField *ObjectWithJsonField         `json:"jsonField,omitempty"`
+		JsonField *ObjectWithJSONField         `json:"jsonField,omitempty"`
 
 		// Has additional properties of type int
 		One *AdditionalPropertiesObject1 `json:"one,omitempty"`
@@ -1205,7 +1205,7 @@ func ParseEnsureEverythingIsReferencedResponse(rsp *http.Response) (*EnsureEvery
 
 			// Has anonymous field which has additional properties
 			Four      *AdditionalPropertiesObject4 `json:"four,omitempty"`
-			JsonField *ObjectWithJsonField         `json:"jsonField,omitempty"`
+			JsonField *ObjectWithJSONField         `json:"jsonField,omitempty"`
 
 			// Has additional properties of type int
 			One *AdditionalPropertiesObject1 `json:"one,omitempty"`

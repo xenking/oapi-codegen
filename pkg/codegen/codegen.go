@@ -34,17 +34,18 @@ type Options struct {
 	GenerateChiServer   bool              // GenerateChiServer specifies whether to generate chi server boilerplate
 	GenerateFiberServer bool              // GenerateFiberServer specifies whether to generate fiber server boilerplate
 	GenerateEchoServer  bool              // GenerateEchoServer specifies whether to generate echo server boilerplate
+	GenerateGinServer  bool              // GenerateGinServer specifies whether to generate echo server boilerplate
 	GenerateClient      bool              // GenerateClient specifies whether to generate client boilerplate
 	GenerateTypes       bool              // GenerateTypes specifies whether to generate type definitions
 	EmbedSpec           bool              // Whether to embed the swagger spec in the generated code
 	SkipFmt             bool              // Whether to skip go imports on the generated code
 	SkipPrune           bool              // Whether to skip pruning unused components on the generated code
-	AliasTypes          bool              // Whether to alias types if possible
 	IncludeTags         []string          // Only include operations that have one of these tags. Ignored when empty.
+	ExcludeSchemas      []string          // Exclude from generation schemas with given names. Ignored when empty.
+	ImportMapping       map[string]string // ImportMapping specifies the golang package path for each external reference
 	ExcludeTags         []string          // Exclude operations that have one of these tags. Ignored when empty.
 	UserTemplates       map[string]string // Override built-in templates from user-provided files
-	ImportMapping       map[string]string // ImportMapping specifies the golang package path for each external reference
-	ExcludeSchemas      []string          // Exclude from generation schemas with given names. Ignored when empty.
+	AliasTypes          bool              // Whether to alias types if possible
 }
 
 // goImport represents a go package to be imported in the generated code
@@ -158,17 +159,17 @@ func Generate(swagger *openapi3.T, packageName string, opts Options) (string, er
 		}
 	}
 
-	var chiServerOut string
-	if opts.GenerateChiServer {
-		chiServerOut, err = GenerateChiServer(t, ops)
+	var fiberServerOut string
+	if opts.GenerateFiberServer {
+		fiberServerOut, err = GenerateFiberServer(t, ops)
 		if err != nil {
 			return "", fmt.Errorf("error generating Go handlers for Paths: %w", err)
 		}
 	}
 
-	var fiberServerOut string
-	if opts.GenerateFiberServer {
-		fiberServerOut, err = GenerateFiberServer(t, ops)
+	var chiServerOut string
+	if opts.GenerateChiServer {
+		chiServerOut, err = GenerateChiServer(t, ops)
 		if err != nil {
 			return "", fmt.Errorf("error generating Go handlers for Paths: %w", err)
 		}
@@ -241,15 +242,15 @@ func Generate(swagger *openapi3.T, packageName string, opts Options) (string, er
 		}
 	}
 
-	if opts.GenerateChiServer {
-		_, err = w.WriteString(chiServerOut)
+	if opts.GenerateFiberServer {
+		_, err = w.WriteString(fiberServerOut)
 		if err != nil {
 			return "", fmt.Errorf("error writing server path handlers: %w", err)
 		}
 	}
 
-	if opts.GenerateFiberServer {
-		_, err = w.WriteString(fiberServerOut)
+	if opts.GenerateChiServer {
+		_, err = w.WriteString(chiServerOut)
 		if err != nil {
 			return "", fmt.Errorf("error writing server path handlers: %w", err)
 		}

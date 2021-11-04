@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"testing"
 
-	examplePetstoreClient "github.com/xenking/oapi-codegen/examples/petstore-expanded"
-	examplePetstore "github.com/xenking/oapi-codegen/examples/petstore-expanded/echo/api"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/golangci/lint-1"
 	"github.com/stretchr/testify/assert"
+	examplePetstoreClient "github.com/xenking/oapi-codegen/examples/petstore-expanded"
+	examplePetstore "github.com/xenking/oapi-codegen/examples/petstore-expanded/echo/api"
 )
 
 func TestExamplePetStoreCodeGeneration(t *testing.T) {
@@ -101,7 +101,7 @@ func TestExamplePetStoreParseFunction(t *testing.T) {
 	}
 	cannedResponse.Header.Add("Content-type", "application/json")
 
-	findPetByIDResponse, err := examplePetstoreClient.ParseFindPetByIDResponse(cannedResponse)
+	findPetByIDResponse, err := examplePetstoreClient.ParseFindPetByIdResponse(cannedResponse)
 	assert.NoError(t, err)
 	assert.NotNil(t, findPetByIDResponse.JSON200)
 	assert.Equal(t, int64(5), findPetByIDResponse.JSON200.Id)

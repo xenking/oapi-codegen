@@ -1,7 +1,7 @@
 
 
 // This is a simple interface which specifies fiber.Route addition functions which
-// are present on both fiber.Echo and fiber.Group, since we want to allow using
+// are present on both fiber.App and fiber.Router, since we want to allow using
 // either of them for path registration
 type FiberRouter interface {
 	Connect(path string, handlers ...fiber.Handler) fiber.Router
@@ -28,6 +28,6 @@ func RegisterHandlersWithBaseURL(router FiberRouter, si ServerInterface, baseURL
         Handler: si,
     }
 {{end}}
-{{range .}}router.{{.Method | lower | ucFirst}}(baseURL + "{{.Path | swaggerUriToEchoUri}}", wrapper.{{.OperationId}})
+{{range .}}router.{{.Method | lower | ucFirst}}(baseURL + "{{.Path | swaggerUriToFiberUri}}", wrapper.{{.OperationId}})
 {{end}}
 }

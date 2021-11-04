@@ -13,134 +13,152 @@ import (
 	"path"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/labstack/echo/v4"
 	"github.com/xenking/oapi-codegen/pkg/runtime"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/gin-gonic/gin"
 )
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Returns all pets
 	// (GET /pets)
-	FindPets(ctx echo.Context, params FindPetsParams) error
+	FindPets(c *gin.Context, params FindPetsParams)
 	// Creates a new pet
 	// (POST /pets)
-	AddPet(ctx echo.Context) error
+	AddPet(c *gin.Context)
 	// Deletes a pet by ID
 	// (DELETE /pets/{id})
-	DeletePet(ctx echo.Context, id int64) error
+	DeletePet(c *gin.Context, id int64)
 	// Returns a pet by ID
 	// (GET /pets/{id})
-	FindPetByID(ctx echo.Context, id int64) error
+	FindPetByID(c *gin.Context, id int64)
 }
 
-// ServerInterfaceWrapper converts echo contexts to parameters.
+// ServerInterfaceWrapper converts contexts to parameters.
 type ServerInterfaceWrapper struct {
-	Handler ServerInterface
+	Handler            ServerInterface
+	HandlerMiddlewares []MiddlewareFunc
 }
 
-// FindPets converts echo context to params.
-func (w *ServerInterfaceWrapper) FindPets(ctx echo.Context) error {
+type MiddlewareFunc func(c *gin.Context)
+
+// FindPets operation middleware
+func (siw *ServerInterfaceWrapper) FindPets(c *gin.Context) {
+
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params FindPetsParams
-	// ------------- Optional query parameter "tags" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "tags", ctx.QueryParams(), &params.Tags)
+	// ------------- Optional query parameter "tags" -------------
+	if paramValue := c.Query("tags"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "tags", c.Request.URL.Query(), &params.Tags)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter tags: %s", err))
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter tags: %s", err)})
+		return
 	}
 
 	// ------------- Optional query parameter "limit" -------------
+	if paramValue := c.Query("limit"); paramValue != "" {
 
-	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
 	}
 
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.FindPets(ctx, params)
-	return err
+	err = runtime.BindQueryParameter("form", true, false, "limit", c.Request.URL.Query(), &params.Limit)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter limit: %s", err)})
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.FindPets(c, params)
 }
 
-// AddPet converts echo context to params.
-func (w *ServerInterfaceWrapper) AddPet(ctx echo.Context) error {
-	var err error
+// AddPet operation middleware
+func (siw *ServerInterfaceWrapper) AddPet(c *gin.Context) {
 
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.AddPet(ctx)
-	return err
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.AddPet(c)
 }
 
-// DeletePet converts echo context to params.
-func (w *ServerInterfaceWrapper) DeletePet(ctx echo.Context) error {
+// DeletePet operation middleware
+func (siw *ServerInterfaceWrapper) DeletePet(c *gin.Context) {
+
 	var err error
+
 	// ------------- Path parameter "id" -------------
 	var id int64
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
 	}
 
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.DeletePet(ctx, id)
-	return err
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeletePet(c, id)
 }
 
-// FindPetByID converts echo context to params.
-func (w *ServerInterfaceWrapper) FindPetByID(ctx echo.Context) error {
+// FindPetByID operation middleware
+func (siw *ServerInterfaceWrapper) FindPetByID(c *gin.Context) {
+
 	var err error
+
 	// ------------- Path parameter "id" -------------
 	var id int64
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
 	}
 
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.FindPetByID(ctx, id)
-	return err
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.FindPetByID(c, id)
 }
 
-// This is a simple interface which specifies echo.Route addition functions which
-// are present on both echo.Echo and echo.Group, since we want to allow using
-// either of them for path registration
-type EchoRouter interface {
-	CONNECT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	DELETE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	GET(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	HEAD(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	OPTIONS(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	PATCH(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	TRACE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+// GinServerOptions provides options for the Gin server.
+type GinServerOptions struct {
+	BaseURL     string
+	Middlewares []MiddlewareFunc
 }
 
-// RegisterHandlers adds each server route to the EchoRouter.
-func RegisterHandlers(router EchoRouter, si ServerInterface) {
-	RegisterHandlersWithBaseURL(router, si, "")
+// RegisterHandlers creates http.Handler with routing matching OpenAPI spec.
+func RegisterHandlers(router *gin.Engine, si ServerInterface) *gin.Engine {
+	return RegisterHandlersWithOptions(router, si, GinServerOptions{})
 }
 
-// Registers handlers, and prepends BaseURL to the paths, so that the paths
-// can be served under a prefix.
-func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL string) {
-
+// RegisterHandlersWithOptions creates http.Handler with additional options
+func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options GinServerOptions) *gin.Engine {
 	wrapper := ServerInterfaceWrapper{
-		Handler: si,
+		Handler:            si,
+		HandlerMiddlewares: options.Middlewares,
 	}
 
-	router.GET(baseURL+"/pets", wrapper.FindPets)
-	router.POST(baseURL+"/pets", wrapper.AddPet)
-	router.DELETE(baseURL+"/pets/:id", wrapper.DeletePet)
-	router.GET(baseURL+"/pets/:id", wrapper.FindPetByID)
+	router.GET(options.BaseURL+"/pets", wrapper.FindPets)
 
-}
+	router.POST(options.BaseURL+"/pets", wrapper.AddPet)
 
-// Base64 encoded, gzipped, json marshaled Swagger object
+	router.DELETE(options.BaseURL+"/pets/:id", wrapper.DeletePet)
+
+	router.GET(options.BaseURL+"/pets/:id", wrapper.FindPetByID)
+
+	return router
+} // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
 	"H4sIAAAAAAAC/+RXW48budH9KwV+32OnNbEXedBTvB4vICBrT+LdvKznoYZdkmrBSw9Z1FgY6L8HRbZu",

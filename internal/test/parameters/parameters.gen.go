@@ -16,14 +16,14 @@ import (
 	"path"
 	"strings"
 
-	"github.com/xenking/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"github.com/xenking/oapi-codegen/pkg/runtime"
 )
 
 // ComplexObject defines model for ComplexObject.
 type ComplexObject struct {
-	Id      int    `json:"Id"`
+	ID      int    `json:"Id"`
 	IsAdmin bool   `json:"IsAdmin"`
 	Object  Object `json:"Object"`
 }

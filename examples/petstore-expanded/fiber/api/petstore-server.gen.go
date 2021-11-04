@@ -12,9 +12,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/xenking/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gofiber/fiber/v2"
+	"github.com/xenking/oapi-codegen/pkg/runtime"
 )
 
 // ServerInterface represents all server handlers.
@@ -115,7 +115,7 @@ func (w *ServerInterfaceWrapper) FindPetByID(ctx *fiber.Ctx) error {
 }
 
 // This is a simple interface which specifies fiber.Route addition functions which
-// are present on both fiber.Echo and fiber.Group, since we want to allow using
+// are present on both fiber.App and fiber.Router, since we want to allow using
 // either of them for path registration
 type FiberRouter interface {
 	Connect(path string, handlers ...fiber.Handler) fiber.Router

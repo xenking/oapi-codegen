@@ -27,8 +27,20 @@ import (
 
 var pathParamRE *regexp.Regexp
 
+var (
+	// https://github.com/golang/lint/blob/master/lint.go#L770
+	commonInitialisms         = []string{"API", "ASCII", "CPU", "CSS", "DNS", "EOF", "GUID", "HTML", "HTTP", "HTTPS", "ID", "IP", "JSON", "LHS", "QPS", "RAM", "RHS", "RPC", "SLA", "SMTP", "SSH", "TLS", "TTL", "UID", "UI", "UUID", "URI", "URL", "UTF8", "VM", "XML", "XSRF", "XSS"}
+	commonInitialismsReplacer *strings.Replacer
+)
+
 func init() {
 	pathParamRE = regexp.MustCompile("{[.;?]?([^{}*]+)\\*?}")
+
+	commonInitialismsForReplacer := make([]string, 0, len(commonInitialisms))
+	for _, initialism := range commonInitialisms {
+		commonInitialismsForReplacer = append(commonInitialismsForReplacer, strings.Title(strings.ToLower(initialism)), initialism)
+	}
+	commonInitialismsReplacer = strings.NewReplacer(commonInitialismsForReplacer...)
 }
 
 // Uppercase the first character in a string. This assumes UTF-8, so we have
@@ -62,7 +74,11 @@ func ToCamelCase(str string) string {
 
 	n := ""
 	capNext := true
+	var firstChar rune = -1
 	for _, v := range s {
+		if firstChar == -1 {
+			firstChar = v
+		}
 		if unicode.IsUpper(v) {
 			n += string(v)
 		}
@@ -82,6 +98,9 @@ func ToCamelCase(str string) string {
 		} else {
 			capNext = false
 		}
+	}
+	if len(n) > 0 && unicode.IsUpper(firstChar) {
+		n = commonInitialismsReplacer.Replace(n)
 	}
 	return n
 }
@@ -295,6 +314,36 @@ func SwaggerUriToEchoUri(uri string) string {
 //   {?param*}
 func SwaggerUriToChiUri(uri string) string {
 	return pathParamRE.ReplaceAllString(uri, "{$1}")
+}
+
+// This function converts a swagger style path URI with parameters to a
+// Gin compatible path URI. We need to replace all of Swagger parameters with
+// ":param". Valid input parameters are:
+//   {param}
+//   {param*}
+//   {.param}
+//   {.param*}
+//   {;param}
+//   {;param*}
+//   {?param}
+//   {?param*}
+func SwaggerUriToGinUri(uri string) string {
+	return pathParamRE.ReplaceAllString(uri, ":$1")
+}
+
+// This function converts a swagger style path URI with parameters to a
+// Fiber compatible path URI. We need to replace all of Swagger parameters with
+// ":param". Valid input parameters are:
+//   {param}
+//   {param*}
+//   {.param}
+//   {.param*}
+//   {;param}
+//   {;param*}
+//   {?param}
+//   {?param*}
+func SwaggerUriToFiberUri(uri string) string {
+	return pathParamRE.ReplaceAllString(uri, ":$1")
 }
 
 // Returns the argument names, in order, in a given URI string, so for
