@@ -24,7 +24,7 @@ import (
 
 // Has additional properties of type int
 type AdditionalPropertiesObject1 struct {
-	Id                   int            `json:"id"`
+	ID                   int            `json:"id"`
 	Name                 string         `json:"name"`
 	Optional             *string        `json:"optional,omitempty"`
 	AdditionalProperties map[string]int `json:"-"`
@@ -32,7 +32,7 @@ type AdditionalPropertiesObject1 struct {
 
 // Does not allow additional properties
 type AdditionalPropertiesObject2 struct {
-	Id   int    `json:"id"`
+	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -387,7 +387,7 @@ func (a *AdditionalPropertiesObject1) UnmarshalJSON(b []byte) error {
 	}
 
 	if raw, found := object["id"]; found {
-		err = json.Unmarshal(raw, &a.Id)
+		err = json.Unmarshal(raw, &a.ID)
 		if err != nil {
 			return fmt.Errorf("error reading 'id': %w", err)
 		}
@@ -429,7 +429,7 @@ func (a AdditionalPropertiesObject1) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
-	object["id"], err = json.Marshal(a.Id)
+	object["id"], err = json.Marshal(a.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling 'id': %w", err)
 	}
@@ -1067,7 +1067,7 @@ type EnsureEverythingIsReferencedResponse struct {
 
 		// Has anonymous field which has additional properties
 		Four      *AdditionalPropertiesObject4 `json:"four,omitempty"`
-		JsonField *ObjectWithJSONField         `json:"jsonField,omitempty"`
+		JSONField *ObjectWithJSONField         `json:"jsonField,omitempty"`
 
 		// Has additional properties of type int
 		One *AdditionalPropertiesObject1 `json:"one,omitempty"`
@@ -1205,7 +1205,7 @@ func ParseEnsureEverythingIsReferencedResponse(rsp *http.Response) (*EnsureEvery
 
 			// Has anonymous field which has additional properties
 			Four      *AdditionalPropertiesObject4 `json:"four,omitempty"`
-			JsonField *ObjectWithJSONField         `json:"jsonField,omitempty"`
+			JSONField *ObjectWithJSONField         `json:"jsonField,omitempty"`
 
 			// Has additional properties of type int
 			One *AdditionalPropertiesObject1 `json:"one,omitempty"`

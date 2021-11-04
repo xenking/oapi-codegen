@@ -44,7 +44,7 @@ type ThingWithID struct {
 	// Embedded struct due to allOf(#/components/schemas/Thing)
 	Thing `yaml:",inline"`
 	// Embedded fields due to inline allOf schema
-	Id int64 `json:"id"`
+	ID int64 `json:"id"`
 }
 
 // AddThingJSONBody defines parameters for AddThing.
