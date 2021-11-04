@@ -28,6 +28,6 @@ func RegisterHandlersWithBaseURL(router FiberRouter, si ServerInterface, baseURL
         Handler: si,
     }
 {{end}}
-{{range .}}router.{{.Method | lower | ucFirst}}(baseURL + "{{.Path | swaggerUriToFiberUri}}", wrapper.{{.OperationId}})
+{{range .Operations}}router.{{.Method | lower | ucFirst}}(baseURL + "{{.Path | swaggerUriToFiberUri}}", wrapper.{{.OperationId}})
 {{end}}
 }

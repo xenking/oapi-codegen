@@ -14,6 +14,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gofiber/fiber/v2"
+	"github.com/xenking/oapi-codegen/examples/petstore-expanded/fiber/api/models"
 	"github.com/xenking/oapi-codegen/pkg/runtime"
 )
 
@@ -21,7 +22,7 @@ import (
 type ServerInterface interface {
 	// Returns all pets
 	// (GET /pets)
-	FindPets(ctx *fiber.Ctx, params FindPetsParams) error
+	FindPets(ctx *fiber.Ctx, params models.FindPetsParams) error
 	// Creates a new pet
 	// (POST /pets)
 	AddPet(ctx *fiber.Ctx) error
@@ -53,7 +54,7 @@ func (w *ServerInterfaceWrapper) FindPets(ctx *fiber.Ctx) error {
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params FindPetsParams
+	var params models.FindPetsParams
 	// ------------- Optional query parameter "tags" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "tags", QueryParams(ctx), &params.Tags)

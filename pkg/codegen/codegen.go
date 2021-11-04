@@ -34,7 +34,7 @@ type Options struct {
 	GenerateChiServer   bool              // GenerateChiServer specifies whether to generate chi server boilerplate
 	GenerateFiberServer bool              // GenerateFiberServer specifies whether to generate fiber server boilerplate
 	GenerateEchoServer  bool              // GenerateEchoServer specifies whether to generate echo server boilerplate
-	GenerateGinServer  bool              // GenerateGinServer specifies whether to generate echo server boilerplate
+	GenerateGinServer   bool              // GenerateGinServer specifies whether to generate echo server boilerplate
 	GenerateClient      bool              // GenerateClient specifies whether to generate client boilerplate
 	GenerateTypes       bool              // GenerateTypes specifies whether to generate type definitions
 	EmbedSpec           bool              // Whether to embed the swagger spec in the generated code
@@ -46,6 +46,7 @@ type Options struct {
 	ExcludeTags         []string          // Exclude operations that have one of these tags. Ignored when empty.
 	UserTemplates       map[string]string // Override built-in templates from user-provided files
 	AliasTypes          bool              // Whether to alias types if possible
+	TypesPackage        string            // Separate types package
 }
 
 // goImport represents a go package to be imported in the generated code
@@ -161,7 +162,7 @@ func Generate(swagger *openapi3.T, packageName string, opts Options) (string, er
 
 	var fiberServerOut string
 	if opts.GenerateFiberServer {
-		fiberServerOut, err = GenerateFiberServer(t, ops)
+		fiberServerOut, err = GenerateFiberServer(t, ops, opts.TypesPackage)
 		if err != nil {
 			return "", fmt.Errorf("error generating Go handlers for Paths: %w", err)
 		}
@@ -203,7 +204,7 @@ func Generate(swagger *openapi3.T, packageName string, opts Options) (string, er
 	w := bufio.NewWriter(&buf)
 
 	externalImports := importMapping.GoImports()
-	importsOut, err := GenerateImports(t, externalImports, packageName)
+	importsOut, err := GenerateImports(t, externalImports, packageName, opts.TypesPackage)
 	if err != nil {
 		return "", fmt.Errorf("error generating imports: %w", err)
 	}
@@ -556,7 +557,7 @@ func GenerateEnums(t *template.Template, types []TypeDefinition) (string, error)
 }
 
 // Generate our import statements and package definition.
-func GenerateImports(t *template.Template, externalImports []string, packageName string) (string, error) {
+func GenerateImports(t *template.Template, externalImports []string, packageName, typesPackage string) (string, error) {
 	// Read build version for incorporating into generated files
 	var modulePath string
 	var moduleVersion string
@@ -572,12 +573,14 @@ func GenerateImports(t *template.Template, externalImports []string, packageName
 
 	context := struct {
 		ExternalImports []string
+		TypesPackage    string
 		PackageName     string
 		ModuleName      string
 		Version         string
 	}{
 		ExternalImports: externalImports,
 		PackageName:     packageName,
+		TypesPackage:    typesPackage,
 		ModuleName:      modulePath,
 		Version:         moduleVersion,
 	}

@@ -2,6 +2,7 @@
 type ServerInterfaceWrapper struct {
     Handler ServerInterface
 }
+{{- $typesPackage := .TypesPackage | getPackageNameFromPath }}
 
 func QueryParams(ctx *fiber.Ctx) url.Values {
 	args := ctx.Context().QueryArgs()
@@ -13,7 +14,7 @@ func QueryParams(ctx *fiber.Ctx) url.Values {
 	return u
 }
 
-{{range .}}{{$opid := .OperationId}}// {{$opid}} converts fiber context to params.
+{{range .Operations}}{{$opid := .OperationId}}// {{$opid}} converts fiber context to params.
 func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx *fiber.Ctx) error {
     var err error
 {{range .PathParams}}// ------------- Path parameter "{{.ParamName}}" -------------
@@ -41,7 +42,7 @@ func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx *fiber.Ctx) error {
 
 {{if .RequiresParamObject}}
     // Parameter object where we will unmarshal all parameters from the context
-    var params {{.OperationId}}Params
+    var params {{if $typesPackage}}{{$typesPackage}}.{{end}}{{.OperationId}}Params
 {{range $paramIdx, $param := .QueryParams}}// ------------- {{if .Required}}Required{{else}}Optional{{end}} query parameter "{{.ParamName}}" -------------
     {{if .IsStyled}}
     err = runtime.BindQueryParameter("{{.Style}}", {{.Explode}}, {{.Required}}, "{{.ParamName}}", QueryParams(ctx), &params.{{.GoName}})

@@ -20,19 +20,20 @@ package api
 import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/xenking/oapi-codegen/examples/petstore-expanded/fiber/api/models"
 	"net/http"
 	"sync"
 )
 
 type PetStore struct {
-	Pets   map[int64]Pet
+	Pets   map[int64]models.Pet
 	NextId int64
 	Lock   sync.Mutex
 }
 
 func NewPetStore() *PetStore {
 	return &PetStore{
-		Pets:   make(map[int64]Pet),
+		Pets:   make(map[int64]models.Pet),
 		NextId: 1000,
 	}
 }
@@ -40,7 +41,7 @@ func NewPetStore() *PetStore {
 // This function wraps sending of an error in the Error format, and
 // handling the failure to marshal that.
 func sendPetstoreError(ctx *fiber.Ctx, code int, message string) error {
-	petErr := Error{
+	petErr := models.Error{
 		Code:    int32(code),
 		Message: message,
 	}
@@ -49,11 +50,11 @@ func sendPetstoreError(ctx *fiber.Ctx, code int, message string) error {
 }
 
 // Here, we implement all of the handlers in the ServerInterface
-func (p *PetStore) FindPets(ctx *fiber.Ctx, params FindPetsParams) error {
+func (p *PetStore) FindPets(ctx *fiber.Ctx, params models.FindPetsParams) error {
 	p.Lock.Lock()
 	defer p.Lock.Unlock()
 
-	var result []Pet
+	var result []models.Pet
 
 	for _, pet := range p.Pets {
 		if params.Tags != nil {
@@ -81,7 +82,7 @@ func (p *PetStore) FindPets(ctx *fiber.Ctx, params FindPetsParams) error {
 
 func (p *PetStore) AddPet(ctx *fiber.Ctx) error {
 	// We expect a NewPet object in the request body.
-	var newPet NewPet
+	var newPet models.NewPet
 	err := ctx.BodyParser(&newPet)
 	if err != nil {
 		return sendPetstoreError(ctx, http.StatusBadRequest, "Invalid format for NewPet")
@@ -93,14 +94,14 @@ func (p *PetStore) AddPet(ctx *fiber.Ctx) error {
 	defer p.Lock.Unlock()
 
 	// We handle pets, not NewPets, which have an additional ID field
-	var pet Pet
+	var pet models.Pet
 	pet.Name = newPet.Name
 	pet.Tag = newPet.Tag
-	pet.Id = p.NextId
+	pet.ID = p.NextId
 	p.NextId = p.NextId + 1
 
 	// Insert into map
-	p.Pets[pet.Id] = pet
+	p.Pets[pet.ID] = pet
 
 	// Now, we have to return the NewPet
 	err = ctx.Status(http.StatusCreated).JSON(pet)

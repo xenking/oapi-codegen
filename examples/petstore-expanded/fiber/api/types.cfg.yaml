@@ -1,5 +1,5 @@
 output:
-  petstore-types.gen.go
+  ./models/petstore-types.gen.go
 generate:
   - types
-package: api
+package: models

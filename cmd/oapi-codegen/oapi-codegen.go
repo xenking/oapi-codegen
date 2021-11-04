@@ -36,6 +36,7 @@ func errExit(format string, args ...interface{}) {
 
 var (
 	flagPackageName    string
+	flagTypesPackage   string
 	flagGenerate       string
 	flagOutputFile     string
 	flagIncludeTags    string
@@ -50,6 +51,7 @@ var (
 
 type configuration struct {
 	PackageName     string            `yaml:"package"`
+	TypesPackage    string            `yaml:"types"`
 	GenerateTargets []string          `yaml:"generate"`
 	OutputFile      string            `yaml:"output"`
 	IncludeTags     []string          `yaml:"include-tags"`
@@ -62,6 +64,7 @@ type configuration struct {
 func main() {
 
 	flag.StringVar(&flagPackageName, "package", "", "The package name for generated code")
+	flag.StringVar(&flagTypesPackage, "types", "", "Path to types package")
 	flag.StringVar(&flagGenerate, "generate", "types,client,server,spec",
 		`Comma-separated list of code to generate; valid options: "types", "client", "chi-server", "server", "gin", "spec", "skip-fmt", "skip-prune"`)
 	flag.StringVar(&flagOutputFile, "o", "", "Where to output generated code, stdout is default")
@@ -136,6 +139,7 @@ func main() {
 	opts.IncludeTags = cfg.IncludeTags
 	opts.ExcludeTags = cfg.ExcludeTags
 	opts.ExcludeSchemas = cfg.ExcludeSchemas
+	opts.TypesPackage = cfg.TypesPackage
 
 	if opts.GenerateEchoServer && opts.GenerateChiServer {
 		errExit("can not specify both server and chi-server targets simultaneously")

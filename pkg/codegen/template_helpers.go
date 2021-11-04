@@ -39,16 +39,30 @@ var (
 // Go parameter declaration from them, eg:
 // ", foo int, bar string, baz float32". The preceding comma is there to save
 // a lot of work in the template engine.
-func genParamArgs(params []ParameterDefinition) string {
+func genParamArgs(params []ParameterDefinition, prefix ...string) string {
 	if len(params) == 0 {
 		return ""
 	}
 	parts := make([]string, len(params))
 	for i, p := range params {
 		paramName := p.GoVariableName()
-		parts[i] = fmt.Sprintf("%s %s", paramName, p.TypeDef())
+		paramType := p.TypeDef()
+		parts[i] = paramName + " "
+		if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(paramType) {
+			parts[i] += prefix[0] + "."
+		}
+
+		parts[i] += paramType
 	}
 	return ", " + strings.Join(parts, ", ")
+}
+
+func getPackageNameFromPath(path string) (name string) {
+	if idx := strings.LastIndexByte(path, '/'); idx > -1 {
+		name = path[idx+1:]
+		name = strings.TrimRight(name, `"'`)
+	}
+	return
 }
 
 // This function is much like the one above, except it only produces the
@@ -271,6 +285,7 @@ func stripNewLines(s string) string {
 // function here by keyName from the template code.
 var TemplateFunctions = template.FuncMap{
 	"genParamArgs":               genParamArgs,
+	"getPackageNameFromPath":     getPackageNameFromPath,
 	"genParamTypes":              genParamTypes,
 	"genParamNames":              genParamNames,
 	"genParamFmtString":          ReplacePathParamsWithStr,

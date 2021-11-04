@@ -1,7 +1,8 @@
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-{{range .}}{{.SummaryAsComment }}
+{{- $typesPackage := .TypesPackage | getPackageNameFromPath }}
+{{range .Operations}}{{.SummaryAsComment }}
 // ({{.Method}} {{.Path}})
-{{.OperationId}}(ctx *fiber.Ctx{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}}) error
+{{.OperationId}}(ctx *fiber.Ctx{{genParamArgs .PathParams $typesPackage}}{{if .RequiresParamObject}}, params {{if $typesPackage}}{{$typesPackage}}.{{end}}{{.OperationId}}Params{{end}}) error
 {{end}}
 }

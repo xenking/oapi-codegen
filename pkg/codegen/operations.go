@@ -665,8 +665,15 @@ func GenerateChiServer(t *template.Template, operations []OperationDefinition) (
 
 // GenerateFiberServer This function generates all the go code for the ServerInterface as well as
 // all the wrapper functions around our handlers.
-func GenerateFiberServer(t *template.Template, operations []OperationDefinition) (string, error) {
-	return GenerateTemplates([]string{"fiber-interface.tmpl", "fiber-wrappers.tmpl", "fiber-register.tmpl"}, t, operations)
+func GenerateFiberServer(t *template.Template, operations []OperationDefinition, typesPackage string) (string, error) {
+	o := struct {
+		Operations   []OperationDefinition
+		TypesPackage string
+	}{
+		Operations: operations,
+		TypesPackage: typesPackage,
+	}
+	return GenerateTemplates([]string{"fiber-interface.tmpl", "fiber-wrappers.tmpl", "fiber-register.tmpl"}, t, o)
 }
 
 // GenerateEchoServer This function generates all the go code for the ServerInterface as well as

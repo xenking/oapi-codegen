@@ -975,9 +975,10 @@ func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx echo.Context) error {
 `,
 	"fiber-interface.tmpl": `// ServerInterface represents all server handlers.
 type ServerInterface interface {
-{{range .}}{{.SummaryAsComment }}
+{{- $typesPackage := .TypesPackage | getPackageNameFromPath }}
+{{range .Operations}}{{.SummaryAsComment }}
 // ({{.Method}} {{.Path}})
-{{.OperationId}}(ctx *fiber.Ctx{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}}) error
+{{.OperationId}}(ctx *fiber.Ctx{{genParamArgs .PathParams $typesPackage}}{{if .RequiresParamObject}}, params {{if $typesPackage}}{{$typesPackage}}.{{end}}{{.OperationId}}Params{{end}}) error
 {{end}}
 }
 `,
@@ -1011,7 +1012,7 @@ func RegisterHandlersWithBaseURL(router FiberRouter, si ServerInterface, baseURL
         Handler: si,
     }
 {{end}}
-{{range .}}router.{{.Method | lower | ucFirst}}(baseURL + "{{.Path | swaggerUriToFiberUri}}", wrapper.{{.OperationId}})
+{{range .Operations}}router.{{.Method | lower | ucFirst}}(baseURL + "{{.Path | swaggerUriToFiberUri}}", wrapper.{{.OperationId}})
 {{end}}
 }
 `,
@@ -1019,6 +1020,7 @@ func RegisterHandlersWithBaseURL(router FiberRouter, si ServerInterface, baseURL
 type ServerInterfaceWrapper struct {
     Handler ServerInterface
 }
+{{- $typesPackage := .TypesPackage | getPackageNameFromPath }}
 
 func QueryParams(ctx *fiber.Ctx) url.Values {
 	args := ctx.Context().QueryArgs()
@@ -1030,7 +1032,7 @@ func QueryParams(ctx *fiber.Ctx) url.Values {
 	return u
 }
 
-{{range .}}{{$opid := .OperationId}}// {{$opid}} converts fiber context to params.
+{{range .Operations}}{{$opid := .OperationId}}// {{$opid}} converts fiber context to params.
 func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx *fiber.Ctx) error {
     var err error
 {{range .PathParams}}// ------------- Path parameter "{{.ParamName}}" -------------
@@ -1058,7 +1060,7 @@ func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx *fiber.Ctx) error {
 
 {{if .RequiresParamObject}}
     // Parameter object where we will unmarshal all parameters from the context
-    var params {{.OperationId}}Params
+    var params {{if $typesPackage}}{{$typesPackage}}.{{end}}{{.OperationId}}Params
 {{range $paramIdx, $param := .QueryParams}}// ------------- {{if .Required}}Required{{else}}Optional{{end}} query parameter "{{.ParamName}}" -------------
     {{if .IsStyled}}
     err = runtime.BindQueryParameter("{{.Style}}", {{.Explode}}, {{.Required}}, "{{.ParamName}}", QueryParams(ctx), &params.{{.GoName}})
@@ -1393,6 +1395,7 @@ import (
 	{{- range .ExternalImports}}
 	{{ . }}
 	{{- end}}
+	{{.TypesPackage}}
 )
 `,
 	"inline.tmpl": `// Base64 encoded, gzipped, json marshaled Swagger object
