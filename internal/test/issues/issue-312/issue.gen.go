@@ -123,7 +123,7 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 // The interface specification for the client above.
 type ClientInterface interface {
 	// GetPet request
-	GetPet(ctx context.Context, petId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetPet(ctx context.Context, petID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ValidatePets request with any body
 	ValidatePetsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -131,7 +131,7 @@ type ClientInterface interface {
 	ValidatePets(ctx context.Context, body ValidatePetsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) GetPet(ctx context.Context, petId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetPet(ctx context.Context, petID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetPetRequest(c.Server, petId)
 	if err != nil {
 		return nil, err
@@ -168,7 +168,7 @@ func (c *Client) ValidatePets(ctx context.Context, body ValidatePetsJSONRequestB
 }
 
 // NewGetPetRequest generates requests for GetPet
-func NewGetPetRequest(server string, petId string) (*http.Request, error) {
+func NewGetPetRequest(server string, petID string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -285,7 +285,7 @@ func WithBaseURL(baseURL string) ClientOption {
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
 	// GetPet request
-	GetPetWithResponse(ctx context.Context, petId string, reqEditors ...RequestEditorFn) (*GetPetResponse, error)
+	GetPetWithResponse(ctx context.Context, petID string, reqEditors ...RequestEditorFn) (*GetPetResponse, error)
 
 	// ValidatePets request with any body
 	ValidatePetsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ValidatePetsResponse, error)
@@ -339,7 +339,7 @@ func (r ValidatePetsResponse) StatusCode() int {
 }
 
 // GetPetWithResponse request returning *GetPetResponse
-func (c *ClientWithResponses) GetPetWithResponse(ctx context.Context, petId string, reqEditors ...RequestEditorFn) (*GetPetResponse, error) {
+func (c *ClientWithResponses) GetPetWithResponse(ctx context.Context, petID string, reqEditors ...RequestEditorFn) (*GetPetResponse, error) {
 	rsp, err := c.GetPet(ctx, petId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -427,7 +427,7 @@ func ParseValidatePetsResponse(rsp *http.Response) (*ValidatePetsResponse, error
 type ServerInterface interface {
 	// Get pet given identifier.
 	// (GET /pets/{petId})
-	GetPet(ctx echo.Context, petId string) error
+	GetPet(ctx echo.Context, petID string) error
 	// Validate pets
 	// (POST /pets:validate)
 	ValidatePets(ctx echo.Context) error

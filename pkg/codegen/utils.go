@@ -29,8 +29,8 @@ var pathParamRE *regexp.Regexp
 
 var (
 	// https://github.com/golang/lint/blob/master/lint.go#L770
-	commonInitialisms         = []string{"API", "ASCII", "CPU", "CSS", "DNS", "EOF", "GUID", "HTML", "HTTP", "HTTPS", "ID", "IP", "JSON", "LHS", "QPS", "RAM", "RHS", "RPC", "SLA", "SMTP", "SSH", "TLS", "TTL", "UID", "UI", "UUID", "URI", "URL", "UTF8", "VM", "XML", "XSRF", "XSS"}
-	commonInitialismsReplacer *strings.Replacer
+	commonInitialisms                = []string{"API", "ASCII", "CPU", "CSS", "DNS", "EOF", "GUID", "HTML", "HTTP", "HTTPS", "ID", "IP", "JSON", "LHS", "QPS", "RAM", "RHS", "RPC", "SLA", "SMTP", "SSH", "TLS", "TTL", "UID", "UI", "UUID", "URI", "URL", "UTF8", "VM", "XML", "XSRF", "XSS"}
+	commonInitialismsReplacer        *strings.Replacer
 	commonInitialismsReverseReplacer *strings.Replacer
 )
 
@@ -101,6 +101,20 @@ func ToCamelCase(str string) string {
 		}
 	}
 	return commonInitialismsReplacer.Replace(n)
+}
+
+func replaceInitialisms(name string) string {
+	hasUpper := false
+	for _, v := range name {
+		if unicode.IsUpper(v) {
+			hasUpper = true
+			break
+		}
+	}
+	if hasUpper {
+		return commonInitialismsReplacer.Replace(name)
+	}
+	return name
 }
 
 // This function returns the keys of the given SchemaRef dictionary in sorted

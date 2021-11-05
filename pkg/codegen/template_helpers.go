@@ -47,7 +47,7 @@ func genParamArgs(params []ParameterDefinition, prefix ...string) string {
 	for i, p := range params {
 		paramName := p.GoVariableName()
 		paramType := p.TypeDef()
-		parts[i] = paramName + " "
+		parts[i] = replaceInitialisms(paramName) + " "
 		if len(prefix) > 0 && prefix[0] != "" {
 			parts[i] += appendPackagePrefix(paramType, prefix[0])
 		} else {
