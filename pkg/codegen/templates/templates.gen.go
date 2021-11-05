@@ -978,7 +978,7 @@ type ServerInterface interface {
 {{- $typesPackage := .TypesPackage | getPackageNameFromPath }}
 {{range .Operations}}{{.SummaryAsComment }}
 // ({{.Method}} {{.Path}})
-{{.OperationId}}(ctx *fiber.Ctx{{genParamArgs .PathParams $typesPackage}}{{if .RequiresParamObject}}, params {{if $typesPackage}}{{$typesPackage}}.{{end}}{{.OperationId}}Params{{end}}) error
+{{.OperationId}}(ctx *fiber.Ctx{{genParamArgs .PathParams $typesPackage}}{{if .RequiresParamObject}}, params {{appendPackagePrefix .OperationId $typesPackage}}Params{{end}}) error
 {{end}}
 }
 `,
@@ -1036,7 +1036,7 @@ func QueryParams(ctx *fiber.Ctx) url.Values {
 func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx *fiber.Ctx) error {
     var err error
 {{range .PathParams}}// ------------- Path parameter "{{.ParamName}}" -------------
-    var {{$varName := .GoVariableName}}{{$varName}} {{.TypeDef}}
+    var {{$varName := .GoVariableName}}{{$varName}} {{appendPackagePrefix .TypeDef $typesPackage}}
 {{if .IsPassThrough}}
     {{$varName}} = ctx.Params("{{.ParamName}}")
 {{end}}
@@ -1060,7 +1060,7 @@ func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx *fiber.Ctx) error {
 
 {{if .RequiresParamObject}}
     // Parameter object where we will unmarshal all parameters from the context
-    var params {{if $typesPackage}}{{$typesPackage}}.{{end}}{{.OperationId}}Params
+    var params {{appendPackagePrefix .OperationId $typesPackage}}Params
 {{range $paramIdx, $param := .QueryParams}}// ------------- {{if .Required}}Required{{else}}Optional{{end}} query parameter "{{.ParamName}}" -------------
     {{if .IsStyled}}
     err = runtime.BindQueryParameter("{{.Style}}", {{.Explode}}, {{.Required}}, "{{.ParamName}}", QueryParams(ctx), &params.{{.GoName}})

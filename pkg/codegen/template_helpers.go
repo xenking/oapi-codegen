@@ -48,11 +48,11 @@ func genParamArgs(params []ParameterDefinition, prefix ...string) string {
 		paramName := p.GoVariableName()
 		paramType := p.TypeDef()
 		parts[i] = paramName + " "
-		if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(paramType) {
-			parts[i] += prefix[0] + "."
+		if len(prefix) > 0 && prefix[0] != "" {
+			parts[i] += appendPackagePrefix(paramType, prefix[0])
+		} else {
+			parts[i] += paramType
 		}
-
-		parts[i] += paramType
 	}
 	return ", " + strings.Join(parts, ", ")
 }
@@ -63,6 +63,13 @@ func getPackageNameFromPath(path string) (name string) {
 		name = strings.TrimRight(name, `"'`)
 	}
 	return
+}
+
+func appendPackagePrefix(paramType, prefix string) string {
+	if prefix == "" || IsPredeclaredGoIdentifier(paramType) {
+		return paramType
+	}
+	return prefix + "." + paramType
 }
 
 // This function is much like the one above, except it only produces the
@@ -286,6 +293,7 @@ func stripNewLines(s string) string {
 var TemplateFunctions = template.FuncMap{
 	"genParamArgs":               genParamArgs,
 	"getPackageNameFromPath":     getPackageNameFromPath,
+	"appendPackagePrefix":        appendPackagePrefix,
 	"genParamTypes":              genParamTypes,
 	"genParamNames":              genParamNames,
 	"genParamFmtString":          ReplacePathParamsWithStr,
