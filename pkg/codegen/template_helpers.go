@@ -283,6 +283,10 @@ func toStringArray(sarr []string) string {
 	return `[]string{"` + strings.Join(sarr, `","`) + `"}`
 }
 
+func mergeStringArray(sarr []string) string {
+	return `"` + strings.Join(sarr, ",") + `"`
+}
+
 func stripNewLines(s string) string {
 	r := strings.NewReplacer("\n", "")
 	return r.Replace(s)
@@ -309,6 +313,7 @@ var TemplateFunctions = template.FuncMap{
 	"genResponseUnmarshal":       genResponseUnmarshal,
 	"getResponseTypeDefinitions": getResponseTypeDefinitions,
 	"toStringArray":              toStringArray,
+	"mergeStringArray":           mergeStringArray,
 	"lower":                      strings.ToLower,
 	"title":                      strings.Title,
 	"stripNewLines":              stripNewLines,

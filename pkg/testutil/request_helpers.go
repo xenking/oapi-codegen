@@ -34,6 +34,7 @@ import (
 	"testing"
 
 	"github.com/labstack/echo/v4"
+	"github.com/valyala/fasthttp"
 )
 
 func NewRequest() *RequestBuilder {
@@ -170,13 +171,45 @@ func (r *RequestBuilder) GoWithHTTPHandler(t *testing.T, handler http.Handler) *
 	}
 }
 
-// Go performs the request, it takes a pointer to a testing context
+func (r *RequestBuilder) GoWithFastHTTPHandler(t *testing.T, handler fasthttp.RequestHandler) *CompletedRequest {
+	if r.Error != nil {
+		// Fail the test if we had an error
+		t.Errorf("error constructing request: %s", r.Error)
+		return nil
+	}
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.Header.SetMethod(r.Method)
+	req.Header.SetRequestURI(r.Path)
+	if r.Body != nil {
+		req.SetBody(r.Body)
+	}
+	if host, ok := r.Headers["Host"]; ok {
+		req.SetHost(host)
+	}
+	for _, c := range r.Cookies {
+		req.Header.SetCookie(c.Name, c.String())
+	}
+
+	rec := httptest.NewRecorder()
+
+	ctx := &fasthttp.RequestCtx{}
+	ctx.Init(req, nil, nil)
+	handler(ctx)
+
+	return &CompletedRequest{
+		Recorder: rec,
+	}
+}
+
+// GoWithEchoHandler performs the request, it takes a pointer to a testing context
 // to print messages, and a pointer to an echo context for request handling.
-func (r *RequestBuilder) Go(t *testing.T, e *echo.Echo) *CompletedRequest {
+func (r *RequestBuilder) GoWithEchoHandler(t *testing.T, e *echo.Echo) *CompletedRequest {
 	return r.GoWithHTTPHandler(t, e)
 }
 
-// This is the result of calling Go() on the request builder. We're wrapping the
+// CompletedRequest is the result of calling Go() on the request builder. We're wrapping the
 // ResponseRecorder with some nice helper functions.
 type CompletedRequest struct {
 	Recorder *httptest.ResponseRecorder

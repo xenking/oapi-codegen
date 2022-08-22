@@ -17,6 +17,10 @@ import (
 	"github.com/xenking/oapi-codegen/pkg/runtime"
 )
 
+const (
+	UserScopes = "user.Scopes"
+)
+
 // Error defines model for Error.
 type Error struct {
 	// Error code

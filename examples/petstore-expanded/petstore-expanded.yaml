@@ -126,13 +126,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+security:
+  - user:
+      - read
+      - write
+
 components:
+  securitySchemes:
+    user:
+      type: apiKey
+      in: header
+      name: X-User-ID
   schemas:
     Pet:
       allOf:
         - $ref: '#/components/schemas/NewPet'
         - required:
-          - id
+            - id
           properties:
             id:
               type: integer

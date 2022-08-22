@@ -1055,7 +1055,8 @@ func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx *fiber.Ctx) error {
 {{end}}
 
 {{range .SecurityDefinitions}}
-    ctx.Set({{.ProviderName | sanitizeGoIdentity | ucFirst}}Scopes, {{toStringArray .Scopes}})
+    {{$scopes := .ProviderName | sanitizeGoIdentity | ucFirst}}
+    ctx.Request().Header.Set({{appendPackagePrefix $scopes $typesPackage}}Scopes, {{mergeStringArray .Scopes}})
 {{end}}
 
 {{if .RequiresParamObject}}
