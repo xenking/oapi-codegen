@@ -330,4 +330,5 @@ var TemplateFunctions = template.FuncMap{
 	"title":                      strings.Title,
 	"stripNewLines":              stripNewLines,
 	"sanitizeGoIdentity":         SanitizeGoIdentity,
+	"replaceInitialisms":         replaceInitialisms,
 }
