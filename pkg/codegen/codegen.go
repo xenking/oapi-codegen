@@ -178,7 +178,7 @@ func Generate(swagger *openapi3.T, packageName string, opts Options) (string, er
 
 	var clientOut string
 	if opts.GenerateClient {
-		clientOut, err = GenerateClient(t, ops)
+		clientOut, err = GenerateClient(t, ops, opts.TypesPackage)
 		if err != nil {
 			return "", fmt.Errorf("error generating client: %w", err)
 		}
@@ -186,7 +186,7 @@ func Generate(swagger *openapi3.T, packageName string, opts Options) (string, er
 
 	var clientWithResponsesOut string
 	if opts.GenerateClient {
-		clientWithResponsesOut, err = GenerateClientWithResponses(t, ops)
+		clientWithResponsesOut, err = GenerateClientWithResponses(t, ops, opts.TypesPackage)
 		if err != nil {
 			return "", fmt.Errorf("error generating client with responses: %w", err)
 		}

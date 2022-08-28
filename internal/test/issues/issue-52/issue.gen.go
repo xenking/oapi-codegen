@@ -79,7 +79,7 @@ func (a *Document_Fields) UnmarshalJSON(b []byte) error {
 }
 
 // Override default JSON handling for Document_Fields to handle AdditionalProperties
-func (a Document_Fields) MarshalJSON() ([]byte, error) {
+func (a *Document_Fields) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 

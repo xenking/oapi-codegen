@@ -163,7 +163,7 @@ func (a *ParamsWithAddPropsParams_P1) UnmarshalJSON(b []byte) error {
 }
 
 // Override default JSON handling for ParamsWithAddPropsParams_P1 to handle AdditionalProperties
-func (a ParamsWithAddPropsParams_P1) MarshalJSON() ([]byte, error) {
+func (a *ParamsWithAddPropsParams_P1) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -216,7 +216,7 @@ func (a *ParamsWithAddPropsParams_P2_Inner) UnmarshalJSON(b []byte) error {
 }
 
 // Override default JSON handling for ParamsWithAddPropsParams_P2_Inner to handle AdditionalProperties
-func (a ParamsWithAddPropsParams_P2_Inner) MarshalJSON() ([]byte, error) {
+func (a *ParamsWithAddPropsParams_P2_Inner) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -285,7 +285,7 @@ func (a *BodyWithAddPropsJSONBody) UnmarshalJSON(b []byte) error {
 }
 
 // Override default JSON handling for BodyWithAddPropsJSONBody to handle AdditionalProperties
-func (a BodyWithAddPropsJSONBody) MarshalJSON() ([]byte, error) {
+func (a *BodyWithAddPropsJSONBody) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -348,7 +348,7 @@ func (a *BodyWithAddPropsJSONBody_Inner) UnmarshalJSON(b []byte) error {
 }
 
 // Override default JSON handling for BodyWithAddPropsJSONBody_Inner to handle AdditionalProperties
-func (a BodyWithAddPropsJSONBody_Inner) MarshalJSON() ([]byte, error) {
+func (a *BodyWithAddPropsJSONBody_Inner) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -425,7 +425,7 @@ func (a *AdditionalPropertiesObject1) UnmarshalJSON(b []byte) error {
 }
 
 // Override default JSON handling for AdditionalPropertiesObject1 to handle AdditionalProperties
-func (a AdditionalPropertiesObject1) MarshalJSON() ([]byte, error) {
+func (a *AdditionalPropertiesObject1) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -503,7 +503,7 @@ func (a *AdditionalPropertiesObject3) UnmarshalJSON(b []byte) error {
 }
 
 // Override default JSON handling for AdditionalPropertiesObject3 to handle AdditionalProperties
-func (a AdditionalPropertiesObject3) MarshalJSON() ([]byte, error) {
+func (a *AdditionalPropertiesObject3) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -577,7 +577,7 @@ func (a *AdditionalPropertiesObject4) UnmarshalJSON(b []byte) error {
 }
 
 // Override default JSON handling for AdditionalPropertiesObject4 to handle AdditionalProperties
-func (a AdditionalPropertiesObject4) MarshalJSON() ([]byte, error) {
+func (a *AdditionalPropertiesObject4) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -648,7 +648,7 @@ func (a *AdditionalPropertiesObject4_Inner) UnmarshalJSON(b []byte) error {
 }
 
 // Override default JSON handling for AdditionalPropertiesObject4_Inner to handle AdditionalProperties
-func (a AdditionalPropertiesObject4_Inner) MarshalJSON() ([]byte, error) {
+func (a *AdditionalPropertiesObject4_Inner) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -706,7 +706,7 @@ func (a *AdditionalPropertiesObject5) UnmarshalJSON(b []byte) error {
 }
 
 // Override default JSON handling for AdditionalPropertiesObject5 to handle AdditionalProperties
-func (a AdditionalPropertiesObject5) MarshalJSON() ([]byte, error) {
+func (a *AdditionalPropertiesObject5) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 

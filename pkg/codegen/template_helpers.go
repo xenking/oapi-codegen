@@ -69,6 +69,9 @@ func appendPackagePrefix(paramType, prefix string) string {
 	if prefix == "" || IsPredeclaredGoIdentifier(paramType) {
 		return paramType
 	}
+	if strings.HasPrefix(paramType, "[]") {
+		return "[]" + prefix + "." + paramType[2:]
+	}
 	return prefix + "." + paramType
 }
 
@@ -96,7 +99,8 @@ func genParamNames(params []ParameterDefinition) string {
 	}
 	parts := make([]string, len(params))
 	for i, p := range params {
-		parts[i] = p.GoVariableName()
+		paramName := p.GoVariableName()
+		parts[i] = replaceInitialisms(paramName)
 	}
 	return ", " + strings.Join(parts, ", ")
 }
@@ -115,7 +119,7 @@ func genResponsePayload(operationID string) string {
 }
 
 // genResponseUnmarshal generates unmarshaling steps for structured response payloads
-func genResponseUnmarshal(op *OperationDefinition) string {
+func genResponseUnmarshal(op *OperationDefinition, prefix ...string) string {
 	var handledCaseClauses = make(map[string]string)
 	var unhandledCaseClauses = make(map[string]string)
 
@@ -170,14 +174,16 @@ func genResponseUnmarshal(op *OperationDefinition) string {
 			// JSON:
 			case StringInArray(contentTypeName, contentTypesJSON):
 				if typeDefinition.ContentTypeName == contentTypeName {
-					var caseAction string
-
-					caseAction = fmt.Sprintf("var dest %s\n"+
+					typeDecl := typeDefinition.Schema.TypeDecl()
+					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) {
+						typeDecl = appendPackagePrefix(typeDecl, prefix[0])
+					}
+					caseAction := fmt.Sprintf("var dest %s\n"+
 						"if err := json.Unmarshal(bodyBytes, &dest); err != nil { \n"+
 						" return nil, err \n"+
 						"}\n"+
 						"response.%s = &dest",
-						typeDefinition.Schema.TypeDecl(),
+						typeDecl,
 						typeDefinition.TypeName)
 
 					caseKey, caseClause := buildUnmarshalCase(typeDefinition, caseAction, "json")
@@ -187,13 +193,16 @@ func genResponseUnmarshal(op *OperationDefinition) string {
 			// YAML:
 			case StringInArray(contentTypeName, contentTypesYAML):
 				if typeDefinition.ContentTypeName == contentTypeName {
-					var caseAction string
-					caseAction = fmt.Sprintf("var dest %s\n"+
+					typeDecl := typeDefinition.Schema.TypeDecl()
+					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) {
+						typeDecl = prefix[0] + "." + typeDecl
+					}
+					caseAction := fmt.Sprintf("var dest %s\n"+
 						"if err := yaml.Unmarshal(bodyBytes, &dest); err != nil { \n"+
 						" return nil, err \n"+
 						"}\n"+
 						"response.%s = &dest",
-						typeDefinition.Schema.TypeDecl(),
+						typeDecl,
 						typeDefinition.TypeName)
 					caseKey, caseClause := buildUnmarshalCase(typeDefinition, caseAction, "yaml")
 					handledCaseClauses[caseKey] = caseClause
@@ -202,13 +211,16 @@ func genResponseUnmarshal(op *OperationDefinition) string {
 			// XML:
 			case StringInArray(contentTypeName, contentTypesXML):
 				if typeDefinition.ContentTypeName == contentTypeName {
-					var caseAction string
-					caseAction = fmt.Sprintf("var dest %s\n"+
+					typeDecl := typeDefinition.Schema.TypeDecl()
+					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) {
+						typeDecl = prefix[0] + "." + typeDecl
+					}
+					caseAction := fmt.Sprintf("var dest %s\n"+
 						"if err := xml.Unmarshal(bodyBytes, &dest); err != nil { \n"+
 						" return nil, err \n"+
 						"}\n"+
 						"response.%s = &dest",
-						typeDefinition.Schema.TypeDecl(),
+						typeDecl,
 						typeDefinition.TypeName)
 					caseKey, caseClause := buildUnmarshalCase(typeDefinition, caseAction, "xml")
 					handledCaseClauses[caseKey] = caseClause

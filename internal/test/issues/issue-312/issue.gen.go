@@ -132,7 +132,7 @@ type ClientInterface interface {
 }
 
 func (c *Client) GetPet(ctx context.Context, petID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetPetRequest(c.Server, petId)
+	req, err := NewGetPetRequest(c.Server, petID)
 	if err != nil {
 		return nil, err
 	}
@@ -340,7 +340,7 @@ func (r ValidatePetsResponse) StatusCode() int {
 
 // GetPetWithResponse request returning *GetPetResponse
 func (c *ClientWithResponses) GetPetWithResponse(ctx context.Context, petID string, reqEditors ...RequestEditorFn) (*GetPetResponse, error) {
-	rsp, err := c.GetPet(ctx, petId, reqEditors...)
+	rsp, err := c.GetPet(ctx, petID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -450,7 +450,7 @@ func (w *ServerInterfaceWrapper) GetPet(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetPet(ctx, petId)
+	err = w.Handler.GetPet(ctx, petID)
 	return err
 }
 

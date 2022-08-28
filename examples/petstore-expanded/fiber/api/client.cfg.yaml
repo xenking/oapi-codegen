@@ -1,0 +1,7 @@
+output:
+  petstore-client.gen.go
+generate:
+  - client
+package: api
+types: '"github.com/xenking/oapi-codegen/examples/petstore-expanded/fiber/api/models"'
+

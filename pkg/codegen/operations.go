@@ -670,7 +670,7 @@ func GenerateFiberServer(t *template.Template, operations []OperationDefinition,
 		Operations   []OperationDefinition
 		TypesPackage string
 	}{
-		Operations: operations,
+		Operations:   operations,
 		TypesPackage: typesPackage,
 	}
 	return GenerateTemplates([]string{"fiber-interface.tmpl", "fiber-wrappers.tmpl", "fiber-register.tmpl"}, t, o)
@@ -690,14 +690,28 @@ func GenerateGinServer(t *template.Template, operations []OperationDefinition) (
 
 // Uses the template engine to generate the function which registers our wrappers
 // as Echo path handlers.
-func GenerateClient(t *template.Template, ops []OperationDefinition) (string, error) {
-	return GenerateTemplates([]string{"client.tmpl"}, t, ops)
+func GenerateClient(t *template.Template, ops []OperationDefinition, typesPackage string) (string, error) {
+	o := struct {
+		Operations   []OperationDefinition
+		TypesPackage string
+	}{
+		Operations:   ops,
+		TypesPackage: typesPackage,
+	}
+	return GenerateTemplates([]string{"client.tmpl"}, t, o)
 }
 
 // This generates a client which extends the basic client which does response
 // unmarshaling.
-func GenerateClientWithResponses(t *template.Template, ops []OperationDefinition) (string, error) {
-	return GenerateTemplates([]string{"client-with-responses.tmpl"}, t, ops)
+func GenerateClientWithResponses(t *template.Template, ops []OperationDefinition, typesPackage string) (string, error) {
+	o := struct {
+		Operations   []OperationDefinition
+		TypesPackage string
+	}{
+		Operations:   ops,
+		TypesPackage: typesPackage,
+	}
+	return GenerateTemplates([]string{"client-with-responses.tmpl"}, t, o)
 }
 
 // GenerateTemplates used to generate templates

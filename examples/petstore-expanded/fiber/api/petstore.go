@@ -14,6 +14,7 @@
 
 //go:generate go run github.com/xenking/oapi-codegen/cmd/oapi-codegen --config=types.cfg.yaml ../../petstore-expanded.yaml
 //go:generate go run github.com/xenking/oapi-codegen/cmd/oapi-codegen --config=server.cfg.yaml ../../petstore-expanded.yaml
+//go:generate go run github.com/xenking/oapi-codegen/cmd/oapi-codegen --config=client.cfg.yaml ../../petstore-expanded.yaml
 
 package api
 
