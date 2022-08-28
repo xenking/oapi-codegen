@@ -175,7 +175,7 @@ func genResponseUnmarshal(op *OperationDefinition, prefix ...string) string {
 			case StringInArray(contentTypeName, contentTypesJSON):
 				if typeDefinition.ContentTypeName == contentTypeName {
 					typeDecl := typeDefinition.Schema.TypeDecl()
-					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) {
+					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) && typeDecl != "interface{}" {
 						typeDecl = appendPackagePrefix(typeDecl, prefix[0])
 					}
 					caseAction := fmt.Sprintf("var dest %s\n"+
@@ -194,7 +194,7 @@ func genResponseUnmarshal(op *OperationDefinition, prefix ...string) string {
 			case StringInArray(contentTypeName, contentTypesYAML):
 				if typeDefinition.ContentTypeName == contentTypeName {
 					typeDecl := typeDefinition.Schema.TypeDecl()
-					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) {
+					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) && typeDecl != "interface{}" {
 						typeDecl = prefix[0] + "." + typeDecl
 					}
 					caseAction := fmt.Sprintf("var dest %s\n"+
@@ -212,7 +212,7 @@ func genResponseUnmarshal(op *OperationDefinition, prefix ...string) string {
 			case StringInArray(contentTypeName, contentTypesXML):
 				if typeDefinition.ContentTypeName == contentTypeName {
 					typeDecl := typeDefinition.Schema.TypeDecl()
-					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) {
+					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) && typeDecl != "interface{}" {
 						typeDecl = prefix[0] + "." + typeDecl
 					}
 					caseAction := fmt.Sprintf("var dest %s\n"+
