@@ -173,7 +173,7 @@ func NewGetPetRequest(server string, petID string) (*http.Request, error) {
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "petId", runtime.ParamLocationPath, petId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "petId", runtime.ParamLocationPath, petID)
 	if err != nil {
 		return nil, err
 	}
