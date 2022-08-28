@@ -175,9 +175,6 @@ func genResponseUnmarshal(op *OperationDefinition, prefix ...string) string {
 			case StringInArray(contentTypeName, contentTypesJSON):
 				if typeDefinition.ContentTypeName == contentTypeName {
 					typeDecl := typeDefinition.Schema.TypeDecl()
-					if typeDecl == "interface{}" {
-						fmt.Println("interface", typeDecl)
-					}
 					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) && typeDecl != "interface{}" {
 						typeDecl = appendPackagePrefix(typeDecl, prefix[0])
 					}
