@@ -18,7 +18,7 @@ func QueryParams(ctx *fiber.Ctx) url.Values {
 func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx *fiber.Ctx) error {
     var err error
 {{range .PathParams}}// ------------- Path parameter "{{.ParamName}}" -------------
-    var {{$varName := .GoVariableName}}{{replaceInitialisms $varName}} {{appendPackagePrefix .TypeDef $typesPackage}}
+    var {{$varName := .GoVariableName | replaceInitialisms}}{{$varName}} {{appendPackagePrefix .TypeDef $typesPackage}}
 {{if .IsPassThrough}}
     {{$varName}} = ctx.Params("{{.ParamName}}")
 {{end}}
