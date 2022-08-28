@@ -66,7 +66,7 @@ func getPackageNameFromPath(path string) (name string) {
 }
 
 func appendPackagePrefix(paramType, prefix string) string {
-	if prefix == "" || IsPredeclaredGoIdentifier(paramType) {
+	if prefix == "" || IsPredeclaredGoIdentifier(paramType) || paramType == "interface{}" {
 		return paramType
 	}
 	if strings.HasPrefix(paramType, "[]") {
@@ -175,6 +175,9 @@ func genResponseUnmarshal(op *OperationDefinition, prefix ...string) string {
 			case StringInArray(contentTypeName, contentTypesJSON):
 				if typeDefinition.ContentTypeName == contentTypeName {
 					typeDecl := typeDefinition.Schema.TypeDecl()
+					if typeDecl == "interface{}" {
+						fmt.Println("interface", typeDecl)
+					}
 					if len(prefix) > 0 && prefix[0] != "" && !IsPredeclaredGoIdentifier(typeDecl) && typeDecl != "interface{}" {
 						typeDecl = appendPackagePrefix(typeDecl, prefix[0])
 					}
